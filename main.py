@@ -77,10 +77,6 @@ async def generate_brand_content(request: BrandingRequest):
         # This is where the S3 upload logic would be implemented
         
         return {
-            "status": "success",
-            "message": "Brand website generated successfully",
-            "parameters_used": brand_parameters,
-            "html_length": len(html_content),
             "html_content": html_content
             # "s3_url": s3_url,  # Would return S3 URL in production
             # For testing, you might want to return the HTML directly:

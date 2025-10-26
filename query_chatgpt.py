@@ -28,6 +28,10 @@ def clean_html_response(html_content: str) -> str:
     
     # Trim whitespace from start and end
     cleaned = cleaned.strip()
+
+    # Remove \n and \r characters
+    cleaned = cleaned.replace('\\n', '').replace('\\r', '')
+
     
     return cleaned
 
@@ -40,10 +44,10 @@ def create_prompt_from_parameters(params: dict) -> str:
     """
     # Map tone to specific design characteristics
     tone_mappings = {
-        'formal': 'sophisticated, elegant, professional with subtle animations',
-        'semiformal': 'balanced, modern, approachable with smooth transitions',
-        'casual': 'friendly, relaxed, inviting with playful hover effects',
-        'playful': 'fun, energetic, creative with bold animations and interactions'
+        'formal': 'sophisticated, elegant, professional.',
+        'semiformal': 'balanced, modern, approachable.',
+        'casual': 'friendly, relaxed, inviting with playful.',
+        'playful': 'fun, energetic, creative.'
     }
     
     # Map design style to specific CSS features
@@ -60,6 +64,12 @@ def create_prompt_from_parameters(params: dict) -> str:
     prompt = f"""
     Create a stunning, modern, and highly interactive single-page website for {params['company_name']}.
     
+    MINIMAL REQUIREMENTS:
+    1. The website must include a header, features/services section, about us, and footer. 
+    2. Use {params['primary_color']} as the primary accent color throughout the design.
+    3. Ensure the website is fully responsive with media queries only using the top 3 common screens width and looks great on all devices (mobile, tablet, desktop).
+    4. Implement smooth scrolling and interactive hover effects.
+
     STRICT REQUIREMENTS:
     1. Return ONLY pure HTML code with embedded CSS. No explanations, no markdown, no comments.
     2. Start directly with <!DOCTYPE html> and end with </html>
@@ -74,12 +84,6 @@ def create_prompt_from_parameters(params: dict) -> str:
     - Tone: {tone_description}
     - Design Style: {style_features}
     - Primary Color: {params['primary_color']} (use this as the main accent color)
-    
-    ADVANCED CSS REQUIREMENTS - BE CREATIVE AND IMPRESSIVE:
-    1. Create a sophisticated color palette based on {params['primary_color']}:
-       - Use color theory to generate complementary, analogous, and accent colors
-       - Implement CSS custom properties (variables) for all colors
-       - Add gradient overlays and color transitions
 
     Make this website visually stunning, memorable, and unique. Maintain usability and brand consistency. The website should feel {tone_description} and showcase {style_features}.
     
@@ -98,7 +102,7 @@ def query_chatgpt_function(prompt: str, verbose: bool = True) -> str:
     try:
         response = client.responses.create(
             model="gpt-5",
-            reasoning={"effort": "high"},  # Use high effort for best quality output
+            reasoning={"effort": "medium"},  # Use high effort for best quality output
             input=[
                 {
                     "role": "system", 
@@ -120,10 +124,6 @@ def query_chatgpt_function(prompt: str, verbose: bool = True) -> str:
         
         # Clean the response
         cleaned_html = clean_html_response(html_content)
-        
-        if verbose:
-            print(f"Response received: {len(cleaned_html)} characters")
-            print("HTML content cleaned successfully")
         
         return cleaned_html
         
