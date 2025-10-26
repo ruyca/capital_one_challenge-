@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
-from query_chatgpt import query_chatgpt_function, create_prompt_from_parameters 
 import re
+from query_chatgpt import create_prompt_from_parameters, query_chatgpt_function, validate_html
 
-app = FastAPI(title="Website API generator", version="1.0.0")
+app = FastAPI(title="Brand Content Generator API")
 
 class BrandingRequest(BaseModel):
     company_name: str = Field(..., description="Name of the company")
@@ -58,31 +59,73 @@ async def generate_brand_content(request: BrandingRequest):
         "design_style": design_style,
         "primary_color": primary_color
     }
-
-    # Testing: return the received parameters
-    # return brand_parameters
     
+    try:
+        # Create the enhanced prompt using the brand parameters
+        prompt = create_prompt_from_parameters(brand_parameters)
+        
+        # Query ChatGPT with the prompt
+        html_content = query_chatgpt_function(prompt, verbose=True)
+        
+        # Validate the HTML
+        if not validate_html(html_content):
+            print("Warning: HTML validation failed, but continuing...")
+        
+        # TODO: Save the response to S3
+        # s3_key = f"{request.company_name.lower().replace(' ', '_')}_{datetime.now().isoformat()}.html"
+        # s3_url = upload_to_s3(html_content, s3_key, brand_parameters)
+        # This is where the S3 upload logic would be implemented
+        
+        return {
+            "status": "success",
+            "message": "Brand website generated successfully",
+            "parameters_used": brand_parameters,
+            "html_length": len(html_content),
+            "html_content": html_content
+            # "s3_url": s3_url,  # Would return S3 URL in production
+            # For testing, you might want to return the HTML directly:
+            # "html_preview": html_content[:500] + "..." if len(html_content) > 500 else html_content
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating content: {str(e)}")
 
-    # TODO: Create the prompt using the brand parameters
-    prompt = create_prompt_from_parameters(brand_parameters)
-    # This is where you will create your custom prompt
+@app.post("/generate-brand-content-preview", response_class=HTMLResponse)
+async def generate_brand_content_preview(request: BrandingRequest):
+    """
+    Endpoint to generate and preview the brand website directly (for testing).
+    Returns the HTML directly so you can view it in a browser.
+    """
     
-    # Query ChatGPT with the prompt
-    chatgpt_response = query_chatgpt_function(prompt)  # Function call placeholder
-
-
+    # Validate and normalize input
+    try:
+        tone = request.validate_tone(request.tone)
+        design_style = request.validate_design_style(request.design_style)
+        primary_color = request.validate_hex_color(request.primary_color)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     
-    # TODO: Save the response to S3
-    # s3_upload_logic(chatgpt_response, brand_parameters)
-    # This is where the S3 upload logic would be implemented
-    
-    return {
-        "status": "success",
-        "message": "Brand content generated successfully",
-        "parameters_received": brand_parameters,
-        "chatgpt_response": chatgpt_response
-        # In production, you might want to return an S3 URL or reference
+    # Store the parameters
+    brand_parameters = {
+        "company_name": request.company_name,
+        "brand_identity": request.brand_identity,
+        "tone": tone,
+        "design_style": design_style,
+        "primary_color": primary_color
     }
+    
+    try:
+        # Create the enhanced prompt using the brand parameters
+        prompt = create_prompt_from_parameters(brand_parameters)
+        
+        # Query ChatGPT with the prompt
+        html_content = query_chatgpt_function(prompt, verbose=True)
+        
+        # Return the HTML directly for preview
+        return HTMLResponse(content=html_content)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating content: {str(e)}")
 
 @app.get("/")
 async def root():
