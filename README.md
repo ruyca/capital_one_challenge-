@@ -15,12 +15,14 @@ API de FastAPI que genera contenido de marca personalizado usando OpenAI y lo su
 ## 🛠️ Instalación
 
 ### 1. Clonar el repositorio
+
 ```bash
 git clone https://github.com/ruyca/capital_one_challenge-.git
 cd capital_one_challenge-
 ```
 
 ### 2. Instalar dependencias
+
 ```bash
 pip3 install -r requirements.txt
 ```
@@ -43,6 +45,7 @@ S3_BUCKET_NAME=tu-bucket-name
 ### 4. Configurar tu bucket de S3
 
 Asegúrate de que tu bucket de S3:
+
 - Tenga permisos de escritura configurados
 - Permita ACL públicas para los objetos (si deseas URLs públicas)
 - Esté en la región especificada en `.env`
@@ -50,6 +53,7 @@ Asegúrate de que tu bucket de S3:
 ## 🚀 Uso
 
 ### Iniciar el servidor
+
 ```bash
 uvicorn main:app --reload
 ```
@@ -57,17 +61,20 @@ uvicorn main:app --reload
 El servidor estará disponible en: `http://localhost:8000`
 
 ### Documentación interactiva
+
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
 ## 📡 Endpoints
 
 ### 1. Generar contenido de marca y subir a S3
+
 ```bash
 POST /generate-brand-content
 ```
 
 **Request Body:**
+
 ```json
 {
   "company_name": "TechCorp",
@@ -79,6 +86,7 @@ POST /generate-brand-content
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -99,27 +107,33 @@ POST /generate-brand-content
 ```
 
 ### 2. Vista previa del contenido (sin guardar)
+
 ```bash
 POST /generate-brand-content-preview
 ```
+
 Devuelve el HTML directamente para previsualización en el navegador.
 
 ### 3. Descargar archivo local
+
 ```bash
 GET /download/{filename}
 ```
 
 ### 4. Verificar configuración de S3
+
 ```bash
 GET /s3/config
 ```
 
 ### 5. Listar archivos en S3
+
 ```bash
 GET /s3/files?max_items=100
 ```
 
 ### 6. Health Check
+
 ```bash
 GET /health
 ```
@@ -127,18 +141,21 @@ GET /health
 ## 🎨 Parámetros de personalización
 
 ### Tone (Tono)
+
 - `formal`: Sofisticado, elegante, profesional
 - `semiformal`: Equilibrado, moderno, cercano
 - `casual`: Amigable, relajado, acogedor
 - `playful`: Divertido, enérgico, creativo
 
 ### Design Style (Estilo de diseño)
+
 - `modern`: Gradientes, glassmorphism, sombras suaves
 - `minimalistic`: Líneas limpias, espacios generosos, tipografía
 - `corporate`: Layouts estructurados, esquemas profesionales
 - `artistic`: Layouts creativos, tipografía audaz, formas únicas
 
 ### Primary Color
+
 - Formato HEX: `#FF5733` o `#F57`
 
 ## 📁 Estructura del proyecto
@@ -178,13 +195,16 @@ curl -X POST "http://localhost:8000/generate-brand-content" \
 ## 🐛 Troubleshooting
 
 ### Error: "AWS credentials not found"
+
 - Verifica que las variables `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` estén configuradas en `.env`
 
 ### Error: "Bucket not accessible"
+
 - Verifica que el nombre del bucket sea correcto
 - Verifica que tus credenciales tengan permisos para acceder al bucket
 
 ### Error: "OpenAI API key not found"
+
 - Verifica que `OPENAI_API_KEY` esté configurada en `.env`
 
 ## 🤝 Contribución
