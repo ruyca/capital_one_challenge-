@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GrimTech</title>
+<style>
+:root{
+  --accent:#0066CC;
+  --bg:#0b1020;
+  --surface: rgba(255,255,255,0.08);
+  --surface-2: rgba(255,255,255,0.14);
+  --text:#eaf5ff;
+  --muted:#cbdaf7;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto;
+  color:var(--text);
+  background: radial-gradient(circle at 20% -10%, rgba(0,102,204,.15), transparent 40%),
+              radial-gradient(circle at 80% 0%, rgba(0,102,204,.1), transparent 40%),
+              linear-gradient(135deg, #0a0f24 0%, #0b1130 60%, #0a0f1a 100%);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+.container{ width: min(1100px, 92%); margin: 0 auto; }
+
+header.site-header{
+  position: sticky; top:0; z-index:100;
+  backdrop-filter: saturate(1.3) blur(8px);
+  background: rgba(8,12,28,0.75);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.header-inner{ display:flex; align-items:center; justify-content:space-between; padding:14px 0; }
+
+.brand{ display:flex; align-items:center; gap:12px; font-weight:700; letter-spacing:.5px; }
+.brand .logo-mark{
+  width:28px; height:28px; border-radius:6px;
+  background: conic-gradient(from 180deg at 50% 50%, var(--accent), transparent 40%);
+  box-shadow: 0 6px 18px rgba(0,102,204,.6);
+}
+.brand .name{ font-size:1.05rem; text-transform:uppercase; letter-spacing:.2em; opacity:.95; }
+
+.nav{ display:flex; gap:18px; align-items:center; }
+.nav a{ color:var(--text); text-decoration:none; padding:10px 14px; border-radius:999px; transition: all .3s ease; }
+.nav a:hover{ background: rgba(0,102,204,.25); transform: translateY(-1px); }
+
+.menu-toggle{ display:none; }
+.hamburger{
+  display:none;
+  width:42px; height:28px; border-radius:8px; border:1px solid rgba(255,255,255,.25);
+  position:relative; cursor:pointer;
+}
+.hamburger:before, .hamburger:after, .hamburger{ background: transparent; }
+.hamburger:before, .hamburger:after{
+  content:""; position:absolute; left:8px; right:8px; height:2px; background:#e8f0ff; transition: all .3s ease;
+}
+.hamburger:before{ top:9px; transform: rotate(0deg); }
+.hamburger:after{ bottom:9px; transform: rotate(0deg); }
+
+@media (max-width: 860px){
+  .nav{ display:none; }
+  .hamburger{ display:block; }
+}
+@media (max-width: 860px){
+  #menu:checked ~ .nav{ display:flex; flex-direction:column; position:absolute; top:60px; right:20px; background: rgba(8,12,28,.95); padding:14px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.4); width: calc(100vw - 40px); }
+  #menu:checked ~ .nav a{ padding:12px 16px; display:block; }
+}
+
+.hero{
+  position: relative;
+  min-height: 78vh;
+  display:grid; place-items:center;
+  overflow:hidden;
+  padding: 40px 0 60px;
+}
+.hero .layers{ position:absolute; inset:0; overflow:hidden; }
+.hero .layer{ position:absolute; border-radius:50%; filter: blur(40px); opacity:.6; }
+.layer1{ width:50vmin; height:50vmin; left:-15vmin; top:-10vmin; background: radial-gradient(circle at 30% 30%, rgba(0,102,204,.8), transparent 40%), radial-gradient(circle at 70% 60%, rgba(0,153,255,.5), transparent 50%); animation: drift1 40s linear infinite; }
+.layer2{ width:70vmin; height:70vmin; right:-20vmin; bottom:-15vmin; background: radial-gradient(circle at 60% 40%, rgba(0,102,204,.6), transparent 40%), radial-gradient(circle at 40% 60%, rgba(0,153,255,.3), transparent 60%); animation: drift2 60s linear infinite; }
+.layer3{ width:60vmin; height:60vmin; left:20%; bottom:0; background: radial-gradient(circle at 40% 40%, rgba(0,102,204,.4), transparent 50%), radial-gradient(circle at 60% 60%, rgba(0,136,255,.2), transparent 60%); animation: drift3 50s linear infinite; }
+
+@keyframes drift1{0%{ transform: translate3d(0,0,0) scale(1);} 50%{ transform: translate3d(-6px, -8px, 0) scale(1.04);} 100%{ transform: translate3d(0,0,0) scale(1);} }
+@keyframes drift2{0%{ transform: translate3d(0,0,0);} 50%{ transform: translate3d(8px, -12px, 0);} 100%{ transform: translate3d(0,0,0);} }
+@keyframes drift3{0%{ transform: translate3d(0,0,0);} 50%{ transform: translate3d(-10px, 6px, 0);} 100%{ transform: translate3d(0,0,0);} }
+
+.hero-content{ position: relative; z-index: 1; text-align:center; padding: 0 20px; }
+.kicker{ font-size: .9rem; letter-spacing:.2em; text-transform: uppercase; color: #cfe0ff; opacity:.9; margin-bottom:12px; }
+h1{ font-size: clamp(2rem, 4vw + 1rem, 4.5rem); margin:0 0 12px; line-height:1.04; letter-spacing:.02em; }
+.hero p{ font-size: clamp(1rem, 1.2vw + .8rem, 1.35rem); color: #dbeaff; margin:0 auto 22px; max-width: 860px; }
+.cta-group{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+
+.btn{ padding:14px 22px; border-radius:999px; border:1px solid rgba(255,255,255,.5); text-decoration:none; font-weight:600; letter-spacing:.02em; transition: transform .2s ease, box-shadow .2s ease, background .3s ease; }
+.btn:hover{ transform: translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,.25); }
+.btn-primary{ background: linear-gradient(135deg, rgba(0,102,204,1) 0%, rgba(0,102,204,.95) 100%); color:white; border:none; }
+.btn-ghost{ background: rgba(255,255,255,.14); color:white; border:1px solid rgba(255,255,255,.4); }
+
+.section{ padding: 80px 0; }
+.section h2{ text-align:center; font-size: clamp(1.6rem, 2.4vw, 2.4rem); margin-bottom:14px; }
+.section p{ text-align:center; color: var(--muted); max-width: 760px; margin: 0 auto 28px; }
+
+.grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap:22px; align-items:stretch; }
+.card{ background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.22); border-radius: 16px; padding: 22px; position:relative; overflow:hidden; transition: transform .25s ease, box-shadow .25s ease; backdrop-filter: blur(6px); }
+.card:hover{ transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,.25); }
+
+.card .icon{ width:54px; height:54px; border-radius:14px; margin-bottom:12px; display:flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg, rgba(0,102,204,.95), rgba(0,102,204,.6)); box-shadow: inset 0 0 12px rgba(255,255,255,.4);
+}
+.card .icon:after{ content:""; width:28px; height:28px; border-radius:50%; border:2px solid rgba(255,255,255,.9); display:block; transform: rotate(45deg); }
+
+.card h3{ margin:10px 0 6px; font-size:1.05rem; }
+.card p{ color:#dbeaff; font-size:.95rem; margin:0; }
+
+.card .hint{ position:absolute; bottom:-40px; right:-40px; width:120px; height:120px; border-radius:50%; background: rgba(0,102,204,.25); filter: blur(8px); transition: transform .3s ease; opacity:.7; }
+
+.card:hover .hint{ transform: translate(60px, -60px); }
+
+@media (max-width:1024px){
+  .grid{ grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width:768px){
+  .grid{ grid-template-columns: repeat(2, 1fr); }
+  h1{ font-size: clamp(2rem, 3.5vw, 3.5rem); }
+}
+@media (max-width:480px){
+  .grid{ grid-template-columns: 1fr; }
+  .hero{ min-height: 70vh; padding: 20px 0 40px; }
+  .hero-content{ padding: 0 14px; }
+  .cta-group{ justify-content:center; }
+  .header-inner{ padding:12px 0; }
+  .brand .name{ font-size:0.95rem; }
+}
+.about-wrap{ display:grid; grid-template-columns: 1.1fr 0.9fr; gap:28px; align-items: center; }
+.glass{ background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.22); border-radius: 20px; padding: 28px; backdrop-filter: blur(8px); }
+@media (max-width: 1024px){
+  .about-wrap{ grid-template-columns: 1fr; }
+}
+
+.footer{ background: rgba(6,8,20,.9); border-top:1px solid rgba(255,255,255,.08); padding:28px 0; }
+.footer-grid{ display:grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; gap:20px; text-align:left; padding: 16px 0; }
+.brand-sm{ font-weight:700; letter-spacing:.15em; font-size:1.1rem; color:white; text-transform:uppercase; }
+
+@media (max-width: 900px){
+  .footer-grid{ grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px){
+  .footer-grid{ grid-template-columns: 1fr; text-align:left; }
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <div class="brand">
+      <div class="logo-mark" aria-hidden="true"></div>
+      <div class="name">GrimTech</div>
+    </div>
+    <input type="checkbox" id="menu" class="menu-toggle" />
+    <label for="menu" class="hamburger" aria-label="Open Menu"></label>
+    <nav class="nav" aria-label="Main Navigation">
+      <a href="#home">Home</a>
+      <a href="#features">Features</a>
+      <a href="#about">About</a>
+      <a href="#footer">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<section id="home" class="hero" aria-label="Hero">
+  <div class="layers" aria-hidden="true">
+    <div class="layer layer1"></div>
+    <div class="layer layer2"></div>
+    <div class="layer layer3"></div>
+  </div>
+  <div class="hero-content container">
+    <div class="kicker" style="display:inline-block; padding:6px 12px; border-radius:999px; background: rgba(0,102,204,.25); border:1px solid rgba(255,255,255,.4);">
+      GrimTech
+    </div>
+    <h1>Innovative technology solutions</h1>
+    <p>Elegant, robust and future-ready engineering. We craft high-performance experiences with gradient glass, parallax depth, and immersive interactions.</p>
+    <div class="cta-group">
+      <a href="#features" class="btn btn-primary">Explore features</a>
+      <a href="#about" class="btn btn-ghost">Learn more</a>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="section" aria-label="Features">
+  <div class="container">
+    <h2>Features and Services</h2>
+    <p>Comprehensive, scalable technology solutions designed for resilience and speed.</p>
+    <div class="grid" role="group" aria-label="Feature grid">
+      <div class="card" tabindex="0">
+        <div class="icon" aria-label="Security icon"></div>
+        <h3>Secure Cloud Architecture</h3>
+        <p>Fortified, scalable cloud foundations with zero-trust principles and elegant failover patterns.</p>
+        <span class="hint"></span>
+      </div>
+      <div class="card" tabindex="0">
+        <div class="icon" aria-label="Automation icon" style="background: linear-gradient(135deg, #1e90ff, #0066cc);"></div>
+        <h3>Intelligent Automation</h3>
+        <p>Adaptive workflows and AI-assisted orchestration to accelerate delivery cycles.</p>
+        <span class="hint"></span>
+      </div>
+      <div class="card" tabindex="0">
+        <div class="icon" aria-label="UI/UX icon" style="background: linear-gradient(135deg, #4ecdc4, #0066cc);"></div>
+        <h3>Elegant UI/UX</h3>
+        <p>Product experiences crafted with glassy surfaces, depth, and accessible interactions.</p>
+        <span class="hint"></span>
+      </div>
+      <div class="card" tabindex="0">
+        <div class="icon" aria-label="Analytics icon" style="background: linear-gradient(135deg, #8a2be2, #0066cc);"></div>
+        <h3>Insightful Analytics</h3>
+        <p>Real-time dashboards and predictive insights powering informed decisions.</p>
+        <span class="hint"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="section" aria-label="About GrimTech">
+  <div class="container about-wrap">
+    <div class="glass" style="min-height:220px;">
+      <h2 style="margin-top:0;">About GrimTech</h2>
+      <p style="margin-top:8px; color:#dbeaff;">
+        GrimTech partners with ambitious teams to deliver cutting-edge technology solutions that feel inevitable. Our approach blends elegance with engineering excellence, creating experiences that are both refined and incredibly reliable.
+      </p>
+      <p style="margin-top:12px; color:#dbeaff;">
+        We embrace gradients, glassmorphism, and CSS-driven visual narratives to produce interfaces that are as delightful as they are performant.
+      </p>
+    </div>
+    <div class="glass" style="min-height:220px;">
+      <h2 style="margin-top:0;">Our Promise</h2>
+      <p>Quality, clarity, and continuity. GrimTech designs for scale, privacy, and enduring value across modern tech landscapes.</p>
+      <p style="margin-top:8px; color:#dbeaff;">We obsess over details so that your systems feel effortless to use and remarkably dependable.</p>
+    </div>
+  </div>
+</section>
+
+<footer id="footer" class="footer" aria-label="Footer">
+  <div class="container footer-grid">
+    <div>
+      <div class="brand-sm" style="margin-bottom:8px;">GrimTech</div>
+      <div style="color:#dbeaff; opacity:.9;">Innovative technology solutions</div>
+    </div>
+    <div>
+      <div style="font-weight:600; margin-bottom:6px;">Navigate</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <a href="#home" style="color:#dbeaff; text-decoration:none;">Home</a>
+        <a href="#features" style="color:#dbeaff; text-decoration:none;">Features</a>
+        <a href="#about" style="color:#dbeaff; text-decoration:none;">About</a>
+      </div>
+    </div>
+    <div>
+      <div style="font-weight:600; margin-bottom:6px;">Contact</div>
+      <div style="color:#dbeaff; opacity:.9;">hello@grimtech.example</div>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

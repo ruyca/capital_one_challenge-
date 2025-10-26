@@ -1,10 +1,17 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel, Field
 import re
+from datetime import datetime
+from pathlib import Path
 from query_chatgpt import create_prompt_from_parameters, query_chatgpt_function, validate_html
+from s3_uploader import upload_html_to_s3, check_s3_configuration, list_uploaded_files
 
 app = FastAPI(title="Brand Content Generator API")
+
+# Crear directorio para guardar archivos HTML si no existe
+OUTPUT_DIR = Path("generated_websites")
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 class BrandingRequest(BaseModel):
     company_name: str = Field(..., description="Name of the company")
@@ -41,6 +48,7 @@ class BrandingRequest(BaseModel):
 async def generate_brand_content(request: BrandingRequest):
     """
     Endpoint to generate brand content based on company parameters.
+    Saves the HTML file and returns the file path.
     """
     
     # Validate and normalize input
@@ -71,20 +79,83 @@ async def generate_brand_content(request: BrandingRequest):
         if not validate_html(html_content):
             print("Warning: HTML validation failed, but continuing...")
         
-        # TODO: Save the response to S3
-        # s3_key = f"{request.company_name.lower().replace(' ', '_')}_{datetime.now().isoformat()}.html"
-        # s3_url = upload_to_s3(html_content, s3_key, brand_parameters)
-        # This is where the S3 upload logic would be implemented
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_company_name = re.sub(r'[^\w\s-]', '', request.company_name).strip().replace(' ', '_').lower()
+        filename = f"{safe_company_name}_{timestamp}.html"
+        filepath = OUTPUT_DIR / filename
         
-        return {
-            "html_content": html_content
-            # "s3_url": s3_url,  # Would return S3 URL in production
-            # For testing, you might want to return the HTML directly:
-            # "html_preview": html_content[:500] + "..." if len(html_content) > 500 else html_content
-        }
+        # Save HTML to file locally
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        
+        print(f"✅ HTML saved locally to: {filepath}")
+        
+        # Upload to S3 and get public URL
+        try:
+            s3_metadata = {
+                "brand_identity": brand_parameters["brand_identity"],
+                "tone": brand_parameters["tone"],
+                "design_style": brand_parameters["design_style"],
+                "primary_color": brand_parameters["primary_color"]
+            }
+            
+            s3_result = upload_html_to_s3(
+                html_content=html_content,
+                company_name=request.company_name,
+                metadata=s3_metadata
+            )
+            
+            return {
+                "success": True,
+                "message": "Website generated and uploaded to S3 successfully",
+                "local_file": {
+                    "filename": filename,
+                    "filepath": str(filepath)
+                },
+                "s3": {
+                    "public_url": s3_result["public_url"],
+                    "s3_key": s3_result["s3_key"],
+                    "bucket": s3_result["bucket"],
+                    "region": s3_result["region"]
+                },
+                "company_name": request.company_name,
+                "timestamp": timestamp
+            }
+            
+        except Exception as s3_error:
+            # If S3 upload fails, still return success with local file info
+            print(f"⚠️ S3 upload failed: {str(s3_error)}")
+            return {
+                "success": True,
+                "message": "Website generated locally, but S3 upload failed",
+                "local_file": {
+                    "filename": filename,
+                    "filepath": str(filepath)
+                },
+                "s3_error": str(s3_error),
+                "company_name": request.company_name,
+                "timestamp": timestamp
+            }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating content: {str(e)}")
+
+@app.get("/download/{filename}")
+async def download_file(filename: str):
+    """
+    Endpoint to download a generated HTML file.
+    """
+    filepath = OUTPUT_DIR / filename
+    
+    if not filepath.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    return FileResponse(
+        path=filepath,
+        media_type="text/html",
+        filename=filename
+    )
 
 @app.post("/generate-brand-content-preview", response_class=HTMLResponse)
 async def generate_brand_content_preview(request: BrandingRequest):
@@ -136,3 +207,32 @@ async def health_check():
     Health check endpoint.
     """
     return {"status": "healthy"}
+
+@app.get("/s3/config")
+async def check_s3_config():
+    """
+    Check S3 configuration status.
+    """
+    try:
+        config_status = check_s3_configuration()
+        return {
+            "s3_configured": config_status["bucket_accessible"],
+            "details": config_status
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error checking S3 config: {str(e)}")
+
+@app.get("/s3/files")
+async def list_s3_files(max_items: int = 100):
+    """
+    List uploaded files in S3.
+    """
+    try:
+        files = list_uploaded_files(max_items=max_items)
+        return {
+            "success": True,
+            "count": len(files),
+            "files": files
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error listing S3 files: {str(e)}")

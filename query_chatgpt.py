@@ -101,7 +101,7 @@ def query_chatgpt_function(prompt: str, verbose: bool = True) -> str:
     """
     try:
         response = client.responses.create(
-            model="gpt-5",
+            model="gpt-5-nano",
             reasoning={"effort": "medium"},  # Use high effort for best quality output
             input=[
                 {
@@ -151,6 +151,9 @@ def validate_html(html_content: str) -> bool:
 
 # Example usage (can be removed in production)
 if __name__ == "__main__":
+    import os
+    from datetime import datetime
+    
     # Test parameters
     test_params = {
         'company_name': 'TechVision Pro',
@@ -169,7 +172,21 @@ if __name__ == "__main__":
     # Validate result
     if validate_html(html_result):
         print("HTML validation passed!")
-        # Save to file for testing
-        with open('test_output.html', 'w', encoding='utf-8') as f:
+        
+        # Create output directory if it doesn't exist
+        output_dir = "generated_websites"
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_name = test_params['company_name'].lower().replace(' ', '_')
+        filename = f"{safe_name}_{timestamp}.html"
+        filepath = os.path.join(output_dir, filename)
+        
+        # Save to file
+        with open(filepath, 'w', encoding='utf-8') as f:
             f.write(html_result)
-        print("Test HTML saved to test_output.html")
+        
+        print(f"✅ Test HTML saved to: {filepath}")
+    else:
+        print("❌ HTML validation failed")
